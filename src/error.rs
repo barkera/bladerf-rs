@@ -76,8 +76,6 @@ impl std::fmt::Debug for Error {
             Error::Unknown(num)=> format!("An unknown error occurred ({})", num),
             Error::Nul(e) => format!("{:?}", e),
         })
-
-        // write!(fmt, "{}", s)
     }
 }
 

@@ -4,7 +4,7 @@
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-use std::ffi::{CString, CStr};
+use std::ffi::{CStr, CString};
 
 pub mod error;
 
@@ -169,9 +169,7 @@ impl BladeRF {
     }
 
     pub fn get_serial(&self) -> String {
-        let s = unsafe {
-            CStr::from_ptr(self.devinfo.serial.as_ptr())
-        };
+        let s = unsafe { CStr::from_ptr(self.devinfo.serial.as_ptr()) };
 
         if let Ok(s) = s.to_str() {
             s.to_string()
@@ -181,9 +179,7 @@ impl BladeRF {
     }
 
     pub fn get_product(&self) -> String {
-        let s = unsafe {
-            CStr::from_ptr(self.devinfo.product.as_ptr())
-        };
+        let s = unsafe { CStr::from_ptr(self.devinfo.product.as_ptr()) };
 
         if let Ok(s) = s.to_str() {
             s.to_string()
@@ -193,9 +189,7 @@ impl BladeRF {
     }
 
     pub fn get_manufacturer(&self) -> String {
-        let s = unsafe {
-            CStr::from_ptr(self.devinfo.manufacturer.as_ptr())
-        };
+        let s = unsafe { CStr::from_ptr(self.devinfo.manufacturer.as_ptr()) };
 
         if let Ok(s) = s.to_str() {
             s.to_string()

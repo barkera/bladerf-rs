@@ -1,7 +1,7 @@
 [package]
 name = "libbladerf"
 version = "0.1.0"
-authors = ["Adam Barker <barkeracode@gmail.com>"]
+authors = ["Adam Barker <barkeracode@gmail.com>", "garbagetrash"]
 description = "Bindings for libbladerf"
 homepage = "https://github.com/barkera/bladerf-rs"
 repository = "https://github.com/barkera/bladerf-rs"
