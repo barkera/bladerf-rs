@@ -1,24 +1,27 @@
+use std::ffi::NulError;
+
 pub enum Error {
-    Unknown,
-    Unexpected = -1,
-    Range = -2,
-    Inval = -3,
-    Mem = -4,
-    IO = -5,
-    Timeout = -6,
-    NoDev = -7,
-    Unsupported = -8,
-    Misaligned = -9,
-    Checksum = -10,
-    NoFile = -11,
-    UpdateFPGA = -12,
-    UpdateFW = -13,
-    TimePast = -14,
-    QueueFull = -15,
-    FPGAOp = -16,
-    Permission = -17,
-    WouldBlock = -18,
-    NotInit = -19,
+    Nul(NulError),
+    Unknown(i32),
+    Unexpected,
+    Range,
+    Inval,
+    Mem,
+    IO,
+    Timeout,
+    NoDev,
+    Unsupported,
+    Misaligned,
+    Checksum,
+    NoFile,
+    UpdateFPGA,
+    UpdateFW,
+    TimePast,
+    QueueFull,
+    FPGAOp,
+    Permission,
+    WouldBlock,
+    NotInit,
 }
 
 impl From<i32> for Error {
@@ -43,36 +46,43 @@ impl From<i32> for Error {
             -17 => Error::Permission,
             -18 => Error::WouldBlock,
             -19 => Error::NotInit,
-            _ => Error::Unknown,
+            _ => Error::Unknown(rc),
         }
     }
 }
 
 impl std::fmt::Debug for Error {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let s = match self {
-            Error::Unexpected => "An unexpected failure occurred",
-            Error::Range => "Provided parameter is out of range",
-            Error::Inval => "Invalid operation/parameter",
-            Error::Mem => "Memory allocation error",
-            Error::IO => "File/Device I/O error",
-            Error::Timeout => "Operation timed out",
-            Error::NoDev => "No device(s) available",
-            Error::Unsupported => "Operation not supported",
-            Error::Misaligned => "Misaligned flash access",
-            Error::Checksum => "Invalid checksum",
-            Error::NoFile => "File not found",
-            Error::UpdateFPGA => "An FPGA update is required",
-            Error::UpdateFW => "A firmware update is requied",
-            Error::TimePast => "Requested timestamp is in the past",
-            Error::QueueFull => "Could not enqueue data into full queue",
-            Error::FPGAOp => "An FPGA operation reported failure",
-            Error::Permission => "Insufficient permissions for the requested operation",
-            Error::WouldBlock => "Operation would block, but has been requested to be non-blocking",
-            Error::NotInit => "Device insufficiently initialized for operation",
-            Error::Unknown => "An unknown error occurred",
-        };
+        write!(fmt, "{}", match self {
+            Error::Unexpected => "An unexpected failure occurred".to_string(),
+            Error::Range => "Provided parameter is out of range".to_string(),
+            Error::Inval => "Invalid operation/parameter".to_string(),
+            Error::Mem => "Memory allocation error".to_string(),
+            Error::IO => "File/Device I/O error".to_string(),
+            Error::Timeout => "Operation timed out".to_string(),
+            Error::NoDev => "No device(s) available".to_string(),
+            Error::Unsupported => "Operation not supported".to_string(),
+            Error::Misaligned => "Misaligned flash access".to_string(),
+            Error::Checksum => "Invalid checksum".to_string(),
+            Error::NoFile => "File not found".to_string(),
+            Error::UpdateFPGA => "An FPGA update is required".to_string(),
+            Error::UpdateFW => "A firmware update is requied".to_string(),
+            Error::TimePast => "Requested timestamp is in the past".to_string(),
+            Error::QueueFull => "Could not enqueue data into full queue".to_string(),
+            Error::FPGAOp => "An FPGA operation reported failure".to_string(),
+            Error::Permission => "Insufficient permissions for the requested operation".to_string(),
+            Error::WouldBlock => "Operation would block.to_string(), but has been requested to be non-blocking".to_string(),
+            Error::NotInit => "Device insufficiently initialized for operation".to_string(),
+            Error::Unknown(num)=> format!("An unknown error occurred ({})", num),
+            Error::Nul(e) => format!("{:?}", e),
+        })
 
-        write!(fmt, "{}", s)
+        // write!(fmt, "{}", s)
+    }
+}
+
+impl From<NulError> for Error {
+    fn from(e: NulError) -> Self {
+        Error::Nul(e)
     }
 }
