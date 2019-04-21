@@ -57,6 +57,84 @@ impl BladeRF {
         Ok(BladeRF { dev, devinfo })
     }
 
+    pub fn set_sample_rate(&self, channel: Channel, rate: u32) -> Result<u32> {
+        let actual = unsafe {
+            let mut actual: u32 = 0;
+            let rc = bladerf_set_sample_rate(
+                self.dev,
+                channel as bladerf_channel,
+                rate,
+                &mut actual,
+            );
+            if rc < 0 {
+                return Err(Error::from(rc));
+            }
+
+            actual
+        };
+
+        Ok(actual)
+    }
+
+    pub fn get_sample_rate(&self, channel: Channel) -> Result<u32> {
+        let actual = unsafe {
+            let mut actual: u32 = 0;
+            let rc = bladerf_get_sample_rate(
+                self.dev,
+                channel as bladerf_channel,
+                &mut actual,
+            );
+            if rc < 0 {
+                return Err(Error::from(rc));
+            }
+
+            actual
+        };
+
+        Ok(actual)
+    }
+
+    pub fn set_bandwidth(
+        &self,
+        channel: Channel,
+        bandwidth: u32,
+    ) -> Result<u32> {
+        let actual = unsafe {
+            let mut actual: u32 = 0;
+            let rc = bladerf_set_bandwidth(
+                self.dev,
+                channel as bladerf_channel,
+                bandwidth,
+                &mut actual,
+            );
+            if rc < 0 {
+                return Err(Error::from(rc));
+            }
+
+            actual
+        };
+
+        Ok(actual)
+    }
+
+    pub fn get_bandwidth(&self, channel: Channel) -> Result<u32> {
+        let actual = unsafe {
+            let mut actual: u32 = 0;
+            let rc = bladerf_get_bandwidth(
+                self.dev,
+                channel as bladerf_channel,
+                &mut actual,
+            );
+            if rc < 0 {
+                return Err(Error::from(rc));
+            }
+
+            actual
+        };
+
+        Ok(actual)
+    }
+
     pub fn set_frequency(&self, channel: Channel, freq: u64) -> Result<()> {
         unsafe {
             let rc = bladerf_set_frequency(
