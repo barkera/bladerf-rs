@@ -1,7 +1,13 @@
 [package]
 name = "libbladerf"
 version = "0.1.0"
-authors = ["Adam Barker <barkera@gmail.com>"]
+authors = ["Adam Barker <barkeracode@gmail.com>"]
+description = "Bindings for libbladerf"
+homepage = "https://github.com/barkera/bladerf-rs"
+repository = "https://github.com/barkera/bladerf-rs"
+readme = "README.md"
+keywords = ["libbladerf", "sdr", "bladerf", "bindings"]
+license = "MIT"
 edition = "2018"
 
 [build-dependencies]
