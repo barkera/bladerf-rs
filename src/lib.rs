@@ -23,14 +23,17 @@ pub enum Channel {
 }
 
 impl BladeRF {
-    pub fn new() -> Result<Self> {
+    pub fn open(ident_str: &str) -> Result<Self> {
         let (dev, devinfo) = unsafe {
-            let mut dev: *mut bladerf = std::ptr::null_mut();
+            let mut ident_str: Vec<i8> =
+                ident_str.as_bytes().into_iter().map(|c| *c as i8).collect();
             let mut devinfo: bladerf_devinfo = std::mem::zeroed();
 
-            bladerf_init_devinfo(&mut devinfo);
+            // add NUL terminator to end of string.
+            ident_str.push(0);
 
-            let rc = bladerf_open_with_devinfo(&mut dev, &mut devinfo);
+            let mut dev: *mut bladerf = std::ptr::null_mut();
+            let rc = bladerf_open(&mut dev, ident_str.as_ptr());
             if rc < 0 {
                 return Err(Error::from(rc));
             }

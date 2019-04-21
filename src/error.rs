@@ -1,4 +1,3 @@
-#[derive(Debug)]
 pub enum Error {
     Unknown,
     Unexpected = -1,
@@ -49,7 +48,7 @@ impl From<i32> for Error {
     }
 }
 
-impl std::fmt::Display for Error {
+impl std::fmt::Debug for Error {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         let s = match self {
             Error::Unexpected => "An unexpected failure occurred",
