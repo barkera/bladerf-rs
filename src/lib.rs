@@ -4,19 +4,25 @@
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-#[derive(Debug)]
-pub enum Error {
-    InvalidDevice,
-}
+pub mod error;
+
+use error::Error;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-pub struct BladeRf {
+pub struct BladeRF {
     dev: *mut bladerf,
     devinfo: bladerf_devinfo,
 }
 
-impl BladeRf {
+pub enum Channel {
+    RX_0 = BLADERF_CHANNEL_RX_0 as isize,
+    RX_1 = BLADERF_CHANNEL_RX_1 as isize,
+    TX_0 = BLADERF_CHANNEL_TX_0 as isize,
+    TX_1 = BLADERF_CHANNEL_TX_1 as isize,
+}
+
+impl BladeRF {
     pub fn new() -> Result<Self> {
         let (dev, devinfo) = unsafe {
             let mut dev: *mut bladerf = std::ptr::null_mut();
@@ -24,35 +30,47 @@ impl BladeRf {
 
             bladerf_init_devinfo(&mut devinfo);
 
-            if bladerf_open_with_devinfo(&mut dev, &mut devinfo) != 0 {
-                return Err(Error::InvalidDevice);
+            let rc = bladerf_open_with_devinfo(&mut dev, &mut devinfo);
+            if rc < 0 {
+                return Err(Error::from(rc));
             }
 
-            if bladerf_get_devinfo(dev, &mut devinfo) != 0 {
-                return Err(Error::InvalidDevice);
+            let rc = bladerf_get_devinfo(dev, &mut devinfo);
+            if rc < 0 {
+                return Err(Error::from(rc));
             }
 
             (dev, devinfo)
         };
 
-        Ok(BladeRf { dev, devinfo })
+        Ok(BladeRF { dev, devinfo })
     }
 
-    pub fn set_frequency_rx0(&self, freq: u64) -> Result<()> {
+    pub fn set_frequency(&self, channel: Channel, freq: u64) -> Result<()> {
         unsafe {
-            if bladerf_set_frequency(self.dev, BLADERF_CHANNEL_RX_0, freq as bladerf_frequency) != 0 {
-                return Err(Error::InvalidDevice);
+            let rc = bladerf_set_frequency(
+                self.dev,
+                channel as bladerf_channel,
+                freq as bladerf_frequency,
+            );
+            if rc < 0 {
+                return Err(Error::from(rc));
             }
 
             Ok(())
         }
     }
 
-    pub fn get_frequency_rx0(&self) -> Result<u64> {
+    pub fn get_frequency(&self, channel: Channel) -> Result<u64> {
         let freq = unsafe {
             let mut freq: u64 = 0;
-            if bladerf_get_frequency(self.dev, BLADERF_CHANNEL_RX_0, &mut freq) != 0 {
-                return Err(Error::InvalidDevice);
+            let rc = bladerf_get_frequency(
+                self.dev,
+                channel as bladerf_channel,
+                &mut freq,
+            );
+            if rc < 0 {
+                return Err(Error::from(rc));
             }
 
             freq
@@ -61,12 +79,17 @@ impl BladeRf {
         Ok(freq)
     }
 
-    pub fn print_info(&self) {
-        println!("{}", self.devinfo.serial.to_vec().into_iter().map(|c| c as u8 as char).collect::<String>());
+    pub fn get_serial(&self) -> String {
+        self.devinfo
+            .serial
+            .to_vec()
+            .into_iter()
+            .map(|c| c as u8 as char)
+            .collect::<String>()
     }
 }
 
-impl Drop for BladeRf {
+impl Drop for BladeRF {
     fn drop(&mut self) {
         unsafe {
             bladerf_close(self.dev);
