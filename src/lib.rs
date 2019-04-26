@@ -24,6 +24,27 @@ pub enum Channel {
     TX_1 = BLADERF_CHANNEL_TX_1 as isize,
 }
 
+pub enum GainMode {
+    DEFAULT = bladerf_gain_mode_BLADERF_GAIN_DEFAULT as isize,
+    MGC = bladerf_gain_mode_BLADERF_GAIN_MGC as isize,
+    FAST_AGC = bladerf_gain_mode_BLADERF_GAIN_FASTATTACK_AGC as isize,
+    SLOW_AGC = bladerf_gain_mode_BLADERF_GAIN_SLOWATTACK_AGC as isize,
+    HYBRID_AGC = bladerf_gain_mode_BLADERF_GAIN_HYBRID_AGC as isize,
+}
+
+impl GainMode {
+    fn from_u32(mode: u32) -> Option<GainMode> {
+        match mode {
+            0 => Some(GainMode::DEFAULT),
+            1 => Some(GainMode::MGC),
+            2 => Some(GainMode::FAST_AGC),
+            3 => Some(GainMode::SLOW_AGC),
+            4 => Some(GainMode::HYBRID_AGC),
+            _ => None,
+        }
+    }
+}
+
 pub enum Backend {
     Any = bladerf_backend_BLADERF_BACKEND_ANY as isize,
     Linux = bladerf_backend_BLADERF_BACKEND_LINUX as isize,
@@ -55,6 +76,77 @@ impl BladeRF {
         };
 
         Ok(BladeRF { dev, devinfo })
+    }
+
+    /// Gain values in dB, can be positive or negative
+    pub fn set_gain(&self, channel: Channel, gain: i32) -> Result<()> {
+        unsafe {
+            let rc = bladerf_set_gain(
+                self.dev,
+                channel as bladerf_channel,
+                gain,
+            );
+            if rc < 0 {
+                return Err(Error::from(rc));
+            }
+        };
+
+        Ok(())
+    }
+
+    pub fn get_gain(&self, channel: Channel) -> Result<i32> {
+        let gain = unsafe {
+            let mut gain: i32 = 0;
+            let rc = bladerf_get_gain(
+                self.dev,
+                channel as bladerf_channel,
+                &mut gain,
+            );
+            if rc < 0 {
+                return Err(Error::from(rc));
+            }
+
+            gain
+        };
+
+        Ok(gain)
+    }
+
+    pub fn set_gain_mode(&self, channel: Channel, gain_mode: GainMode) -> Result<()> {
+        unsafe {
+            let rc = bladerf_set_gain_mode(
+                self.dev,
+                channel as bladerf_channel,
+                gain_mode as bladerf_gain_mode,
+            );
+            if rc < 0 {
+                return Err(Error::from(rc));
+            }
+        }
+
+        Ok(())
+    }
+
+    pub fn get_gain_mode(&self, channel: Channel) -> Result<GainMode> {
+        let mode = unsafe {
+            let mut mode: bladerf_gain_mode = 0;
+            let rc = bladerf_get_gain_mode(
+                self.dev,
+                channel as bladerf_channel,
+                &mut mode,
+            );
+            if rc < 0 {
+                return Err(Error::from(rc));
+            }
+
+            if let Some(i) = GainMode::from_u32(mode) {
+                i
+            } else {
+                return Err(Error::Unexpected);
+            }
+        };
+
+        Ok(mode)
     }
 
     pub fn set_sample_rate(&self, channel: Channel, rate: u32) -> Result<u32> {
