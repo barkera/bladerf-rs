@@ -33,6 +33,18 @@ pub enum Backend {
     Unknown,
 }
 
+pub enum Format {
+    SC16_Q11 = bladerf_format_BLADERF_FORMAT_SC16_Q11 as isize,
+    SC16_Q11_META = bladerf_format_BLADERF_FORMAT_SC16_Q11_META as isize,
+}
+
+pub enum Layout {
+    RX_X1 = bladerf_channel_layout_BLADERF_RX_X1 as isize,
+    TX_X1 = bladerf_channel_layout_BLADERF_TX_X1 as isize,
+    RX_X2 = bladerf_channel_layout_BLADERF_RX_X2 as isize,
+    TX_X2 = bladerf_channel_layout_BLADERF_TX_X2 as isize,
+}
+
 impl BladeRF {
     pub fn open(ident_str: &str) -> Result<Self> {
         let (dev, devinfo) = unsafe {
@@ -200,6 +212,65 @@ impl BladeRF {
 
     pub fn get_backend(&self) -> Backend {
         Backend::from(self.devinfo.backend)
+    }
+
+    pub fn sync_rx(&self, samples: &mut [i32], timeout: u32) -> Result<()> {
+        unsafe {
+            let rc = bladerf_sync_rx(
+                self.dev,
+                samples.as_ptr() as *mut _,
+                samples.len() as u32,
+                std::ptr::null_mut(),
+                timeout,
+            );
+            if rc != 0 {
+                return Err(Error::from(rc));
+            }
+        }
+
+        Ok(())
+    }
+
+    pub fn sync_config(
+        &self,
+        layout: Layout,
+        format: Format,
+        num_buffers: u32,
+        buffer_size: u32,
+        num_transfers: u32,
+        stream_timeout: u32,
+    ) -> Result<()> {
+        unsafe {
+            let rc = bladerf_sync_config(
+                self.dev,
+                layout as bladerf_channel_layout,
+                format as bladerf_format,
+                num_buffers,
+                buffer_size,
+                num_transfers,
+                stream_timeout,
+            );
+            if rc != 0 {
+                Err(Error::from(rc))
+            } else {
+                Ok(())
+            }
+        }
+    }
+
+    pub fn enable_module(&self, channel: Channel, enable: bool) -> Result<()> {
+        unsafe {
+            let rc = bladerf_enable_module(
+                self.dev,
+                channel as bladerf_channel,
+                enable,
+            );
+            if rc != 0 {
+                Err(Error::from(rc))
+            } else {
+                Ok(())
+            }
+        }
     }
 }
 
