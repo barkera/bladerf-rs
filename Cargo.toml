@@ -16,3 +16,4 @@ bindgen = "0.42"
 [dev-dependencies]
 byteorder = "1"
 zmq = "0.9"
+config = "0.9"

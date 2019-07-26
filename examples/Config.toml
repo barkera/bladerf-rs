@@ -1,0 +1,4 @@
+sample_rate = 2_500_000
+bandwidth = 2_500_000
+rf_frequency = 2_400_000_000
+port = 5556
